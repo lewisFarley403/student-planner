@@ -1,0 +1,28 @@
+:root {
+  --text-primary: #111517;
+  --text-secondary: #4B5563;  /* text-gray-700 */
+  --text-success: #078838;
+  --text-white: #ffffff;
+  --border-color: #dce1e5;
+  --bg-light: #f0f3f4;
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-success {
+  color: var(--text-success);
+}
+
+.border-custom {
+  border-color: var(--border-color);
+}
+
+.bg-custom-light {
+  background-color: var(--bg-light);
+} 

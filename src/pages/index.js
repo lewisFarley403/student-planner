@@ -1,113 +1,152 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import { useEffect, useState } from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import Navigation from '@/components/Navigation';
+import Layout from '@/components/Layout';
+import Header from '@/components/Header';
+import SectionTitle from '@/components/SectionTitle';
+import StudyCard from '@/components/StudyCard';
+import { CalendarIcon, ExperimentIcon } from '@/components/Icons';
+import '@/styles/colors.css'; 
+import { supabase } from '@/lib/supabaseClient';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export default function Home() {
+  const [studyAllocations, setStudyAllocations] = useState([]);
+  useEffect(() => {
+    async function fetchStudyAllocations() {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          throw new Error(sessionError?.message || 'No authenticated session');
+        }
+
+        const response = await fetch('/api/gettimegoals', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error('Failed to fetch study allocations');
+        }
+        const data = await response.json();
+        if (data.success) {
+          setStudyAllocations(data.data);
+        } else {
+          console.error('Error fetching study allocations:', data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching study allocations:', error);
+      }
+    }
+    fetchStudyAllocations();
+  }, []);
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <Layout title="My Week">
+      <Header title="My Week" />
+      
+      {/* Time Management Quest Card */}
+      <div className="p-4">
+        <div className="relative rounded-2xl overflow-hidden h-48">
+          <img 
+            src="https://cdn.usegalileo.ai/sdxl10/05009e48-75f9-4578-893f-56db9d4415f2.png"
+            alt="Student studying"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 p-6 flex flex-col justify-end">
+            <h2 className="text-white text-2xl font-bold mb-2">Time Management Quest</h2>
+            <p className="text-white text-sm">Achieve 30 hours of focused study this week to unlock rewards!</p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </div>
+
+      {/* Study Goals */}
+      <section className="p-4">
+        <SectionTitle>Study Goals</SectionTitle>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-primary">ECM2434</h3>
+              <p className="text-secondary text-sm">Study 10 hours</p>
+            </div>
+            <span className="text-primary font-bold">3</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-primary">MTH1001</h3>
+              <p className="text-secondary text-sm">Study 8 hours</p>
+            </div>
+            <span className="text-primary font-bold">4</span>
+          </div>
+          
+          {/* Weekly Goal Progress */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-secondary">Weekly Goal</span>
+              <span className="text-primary">60%</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full">
+              <div className="h-full w-[60%] bg-primary rounded-full"></div>
+            </div>
+            <p className="text-secondary text-sm mt-1">30 hours</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Weekly Chart */}
+      <section className="p-4">
+        <SectionTitle>Weekly Chart</SectionTitle>
+        <div className="rounded-xl border border-custom p-6">
+          <div className="mb-4">
+            <h3 className="text-base font-medium text-primary">Weekly Hours Tracked</h3>
+            <p className="text-[32px] font-bold text-primary leading-tight">12.3h</p>
+            <div className="flex gap-1 items-center">
+              <span className="text-secondary">Last Week</span>
+              <span className="text-success font-medium">+30%</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-7 gap-6 h-[180px] items-end mt-6">
+            {[
+              { day: 'Mon', height: '40%' },
+              { day: 'Tue', height: '30%' },
+              { day: 'Wed', height: '40%' },
+              { day: 'Thu', height: '70%' },
+              { day: 'Fri', height: '50%' },
+              { day: 'Sat', height: '20%' },
+              { day: 'Sun', height: '100%' }
+            ].map(({ day, height }) => (
+              <div key={day} className="flex flex-col items-center w-full">
+                <div 
+                  className="w-full bg-custom-light border-t-2 border-custom"
+                  style={{ height }}
+                />
+                <p className="text-secondary text-[13px] font-bold mt-2">{day}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Next Up */}
+      <section className="p-4">
+        <SectionTitle>Next Up</SectionTitle>
+        <div className="space-y-4">
+          <StudyCard 
+            course="Calculus Assignment"
+            time="Due Friday, April 26"
+            icon={<CalendarIcon />}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <StudyCard 
+            course="Physics Experiment"
+            time="Due Monday, April 29"
+            icon={<ExperimentIcon />}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+      </section>
+    </Layout>
   );
 }
